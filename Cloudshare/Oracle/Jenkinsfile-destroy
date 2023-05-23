@@ -1,0 +1,100 @@
+//
+// Pipeline to Destroy Oracle Self-Service Resources
+//
+// Demo:  Standard Demo
+//
+// 2022 (c) Delphix - Matteo Ferrari (matteo.ferrari@delphix.com)
+// 2023 DCT Jenkins Plugin Transforms by Nick Mathison
+//
+pipeline {
+
+   agent any
+   stages {
+      stage('Destroy container Oracle DEV') {
+         steps {
+            /**
+            * DXToolkit
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_ctl_js_container \
+                    -d democde1 \
+                    -action delete \
+                    -container_name \
+                    'Oracle DEV' \
+                    -dropvdb yes
+            '''
+            /**
+            * DCT Jenkins Plugin
+            */
+               deleteVdb 
+                  vdbId: "<Oracle_DEV_ID>",
+                  // name: // "Oracle_DEV", SUPPORT TBD, but it's VDB name, not container name
+                  // force: true  // OPTIONAL
+                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
+                  credentialId: "DCT-API-KEY"
+         }
+      }
+      stage('Destroy container Oracle QA') {
+         steps {
+            /**
+            * DXToolkit
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_ctl_js_container \
+                    -d democde1 \
+                    -action delete \
+                    -container_name 'Oracle QA' \
+                    -dropvdb yes
+            '''
+            /**
+            * DCT Jenkins Plugin
+            */
+               deleteVdb 
+                  vdbId: "<Oracle_QA_ID>",
+                  // name: "Oracle_QA", // SUPPORT TBD, but it's VDB name, not container name
+                  // force: true  // OPTIONAL
+                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
+                  credentialId: "DCT-API-KEY"
+         }
+      }
+      stage('Destroy Self Service Template Oracle Demo') {
+         steps {
+            /**
+            * DXToolkit
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_ctl_js_template \
+                    -d democde1 \
+                    -action delete \
+                    -template_name 'Oracle Demo'
+            '''
+            /**
+            * DCT Jenkins Plugin
+            * N/A - No equivalent in DCT.
+            */ 
+         }
+      }
+      stage('Destroy ORAMASK VDB') {
+         steps {
+            /**
+            * DXToolkit
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_remove_db \
+                    -d democde1 \
+                    -skip \
+                    -name 'Oracle_MASK'
+            '''
+            /**
+            * DCT Jenkins Plugin
+            */
+               deleteVdb 
+                  vdbId: "<Oracle_MASK_ID>",
+                  // name: "Oracle_MASK", // SUPPORT TBD, but it's VDB name, not container name
+                  // force: true  // OPTIONAL
+                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
+                  credentialId: "DCT-API-KEY"
+         }
+      }
+   }
+}

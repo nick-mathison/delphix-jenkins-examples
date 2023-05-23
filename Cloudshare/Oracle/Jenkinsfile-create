@@ -1,0 +1,171 @@
+//
+// Pipeline to Create Oracle Self-Service Resources
+//
+// Demo:  Standard Demo
+//
+// 2022 (c) Delphix - Matteo Ferrari (matteo.ferrari@delphix.com)
+// 2023 DCT Jenkins Plugin Transforms by Nick Mathison
+//
+pipeline {
+   agent any
+
+   stages {
+      stage('Create Oracle_MASK VDB') {
+         steps {
+            /**
+            * DXToolkit: Provision Oracle_MASK from chosen dSource
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_provision_vdb \
+                    -d democde1 \
+                    -sourcename Oracle_master \
+                    -dbname ORAMASK \
+                    -targetname Oracle_MASK \
+                    -group "MaskGC" \
+                    -creategroup \
+                    -environment Oracle_Target \
+                    -type oracle \
+                    -envinst "/u01/oracle/oracle19c" \
+                    -envUser delphix
+            '''
+            /**
+            * DCT Jenkins Plugin
+            * Fictional Step. v1 steps require Snapshot ID or Bookmark specification. 
+            */ 
+               provisionVdb 
+                  sourceDataId: "Oracle_master",
+                  name: "Oracle_MASK",
+                  environmentId: "Oracle_Target",
+                  environmentUserId: "delphix",
+                  additionalProperties: {
+                     "database_name": "ORAMASK",
+                     "target_group_id", "MaskGC",
+                     "make_current_account_owner": true, // Optional, but ensures runtime user has access
+                  },
+                  tagList: [
+                     [key: "Group", value: "MaskGC"], // Optional, but could be equivalent to Target Group Id to help sort.
+                     [key: "Team",  value: "Alpha"]   // Optional, but update to reflect Team ownership.
+                  ],
+                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
+                  credentialId: "DCT-API-KEY"
+                  // N/A -d democde1
+                  // N/A -type oracle
+                  // N/A -envinst "/u01/oracle/oracle19c"
+         }
+      }
+      stage('Create Oracle_DEV VDB') {
+         steps {
+            /**
+            * DXToolkit: Provision Oracle_DEV from chosen dSource
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_provision_vdb \
+                    -d democde1 \
+                    -sourcename Oracle_MASK \
+                    -dbname ORADEV \
+                    -targetname Oracle_DEV \
+                    -group "DEV" \
+                    -creategroup \
+                    -environment Oracle_Target \
+                    -type oracle \
+                    -envinst "/u01/oracle/oracle19c" \
+                    -envUser delphix
+            '''
+
+            /**
+            * DCT Jenkins Plugin
+            * Repeat format above.
+            */ 
+            // provisionVDB...
+         }
+      }
+      stage('Create Oracle_QA VDB') {
+         steps {
+            /**
+            * DXToolkit: Provision Oracle_QA from chosen dSource
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_provision_vdb \
+                    -d democde1 \
+                    -sourcename Oracle_MASK \
+                    -dbname ORAQA \
+                    -targetname Oracle_QA \
+                    -group "QA" \
+                    -creategroup \
+                    -environment Oracle_Target \
+                    -type oracle \
+                    -envinst "/u01/oracle/oracle19c" \
+                    -envUser delphix
+            '''
+            /**
+            * DCT Jenkins Plugin
+            * Repeat format above.
+            */ 
+            // provisionVDB...
+         }
+      }
+      stage('Create Self Service Template Oracle Demo') {
+         steps {
+            /**
+            * DXToolkit
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_ctl_js_template \
+                    -d democde1 \
+                    -source "MaskGC,Oracle_MASK,Oracle_MASK,1" \
+                    -action create \
+                    -template_name "Oracle Demo"
+            '''
+            /**
+            * DCT Jenkins Plugin
+            * N/A - No equivalent.
+            * Update Tags and/or `make_current_account_owner`: true as required.
+            */ 
+         }
+      }
+      stage('Create Self Service Container Oracle DEV') {
+         steps {
+            /**
+            * DXToolkit
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_ctl_js_container \
+                    -d democde1 \
+                    -action create \
+                    -container_def 'DEV,Oracle_DEV' \
+                    -container_name 'Oracle DEV' \
+                    -template_name 'Oracle Demo' \
+                    -container_owner admin \
+                    -dontrefresh
+            '''
+            /**
+            * DCT Jenkins Plugin
+            * N/A - No equivalent.
+            * Update Tags and/or `make_current_account_owner`: true as required.
+            */ 
+         }
+      }
+      stage('Create Self Service Container Oracle QA') {
+         steps {
+            /**
+            * DXToolkit
+            */ 
+            sh '''
+                /home/delphix/dxtoolkit2/dx_ctl_js_container \
+                    -d democde1 \
+                    -action create \
+                    -container_def 'QA,Oracle_QA' \
+                    -container_name 'Oracle QA' \
+                    -template_name 'Oracle Demo' \
+                    -container_owner admin \
+                    -dontrefresh
+            '''
+            /**
+            * DCT Jenkins Plugin
+            * N/A - No direct equivalent.
+            * Update Tags and/or `make_current_account_owner`: true as required.
+            */ 
+         }
+      }
+   }
+}

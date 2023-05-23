@@ -1,0 +1,62 @@
+//
+// Pipeline to stop Oracle Resources
+//
+// Demo:  Standard Demo
+//
+// 2022 (c) Delphix - Matteo Ferrari (matteo.ferrari@delphix.com)
+// 2023 DCT Jenkins Plugin Transforms by Nick Mathison
+//
+pipeline {
+   agent any
+   stages {
+      stage('stop Oracle DSOURCE') {
+         steps {
+            sh "/home/delphix/dxtoolkit2/dx_ctl_db -d democde1 -action disable -name 'Oracle_master'"
+            sh "exit 0"
+            
+            /**
+            * DCT Jenkins Plugin
+            */
+            disableDSource name: 'Oracle_master', credentialId: "DCT-API-KEY"
+         }
+      }
+      stage('stop Oracle VDBs') {
+         steps {
+            parallel(
+                Stop_MASK: {
+                        sh "/home/delphix/dxtoolkit2/dx_ctl_db -d democde1 -action disable -name 'Oracle_MASK'"
+                        /**
+                        * DCT Jenkins Plugin
+                        */
+                        disableVDB name: 'Oracle_MASK', credentialId: "DCT-API-KEY"
+                    },
+                Stop_QA: {
+                        sh "/home/delphix/dxtoolkit2/dx_ctl_js_container -d democde1 -container_name 'Oracle QA' -action disable"
+                        /**
+                        * DCT Jenkins Plugin
+                        */
+                        disableVDB name: 'Oracle_QA', credentialId: "DCT-API-KEY"  // VDB Name, not container name
+                    },
+                Stop_DEV: {
+                        sh "/home/delphix/dxtoolkit2/dx_ctl_js_container -d democde1 -container_name 'Oracle DEV' -action disable"
+                        /**
+                        * DCT Jenkins Plugin
+                        */
+                        disableVDB name: 'Oracle_DEV', credentialId: "DCT-API-KEY"  // VDB Name, not container name
+                }
+            )
+         }
+      }
+      stage('Disable Oracle environments') {
+         steps {
+            sh "/home/delphix/dxtoolkit2/dx_ctl_env -d democde1 -name 'Oracle_Target' -action disable"
+            sh "/home/delphix/dxtoolkit2/dx_ctl_env -d democde1 -name 'Oracle_Source' -action disable"
+            /**
+            * DCT Jenkins Plugin
+            */
+            disableEnvironment name: 'Oracle_Target', credentialId: "DCT-API-KEY"
+            disableEnvironment name: 'Oracle_Source', credentialId: "DCT-API-KEY"
+         }
+      }
+   }
+}

@@ -1,0 +1,64 @@
+//
+// Pipeline to start Oracle Resources
+//
+// Demo:  Standard Demo
+//
+// 2022 (c) Delphix - Matteo Ferrari (matteo.ferrari@delphix.com)
+// 2023 DCT Jenkins Plugin Transforms by Nick Mathison
+//
+pipeline {
+   agent any
+   stages {
+      stage('enable Oracle environments') {
+         steps {
+            sh "/home/delphix/dxtoolkit2/dx_ctl_env -d democde1 -name 'Oracle_Target' -action enable"
+            sh "/home/delphix/dxtoolkit2/dx_ctl_env -d democde1 -name 'Oracle_Source' -action enable"
+
+            /**
+            * DCT Jenkins Plugin
+            */
+            enableEnvironment name: 'Oracle_Target', credentialId: "DCT-API-KEY"
+            enableEnvironment name: 'Oracle_Source', credentialId: "DCT-API-KEY"
+         }
+
+      }
+      stage('start Oracle DSOURCE') {
+         steps {
+            sh "/home/delphix/dxtoolkit2/dx_ctl_db -d democde1 -action enable -name 'Oracle_master'"
+            sh "exit 0"
+
+            /**
+            * DCT Jenkins Plugin
+            */
+            enableDSource name:'Oracle_master', credentialId: "DCT-API-KEY"
+         }
+      }
+      stage('start Oracle VDBs') {
+         steps {
+            parallel(
+                Start_MASK: {
+                        sh "/home/delphix/dxtoolkit2/dx_ctl_db -d democde1 -action enable -name 'Oracle_MASK'"
+                        /**
+                        * DCT Jenkins Plugin
+                        */
+                        enableVDB name: 'Oracle_MASK', credentialId: "DCT-API-KEY"
+                    },
+                Start_QA: {
+                        sh "/home/delphix/dxtoolkit2/dx_ctl_js_container -d democde1 -container_name 'Oracle QA' -action enable"
+                        /**
+                        * DCT Jenkins Plugin
+                        */
+                        enableVDB name: 'Oracle_QA', credentialId: "DCT-API-KEY" // VDB Name, not container name
+                    },
+                Start_DEV: {
+                        sh "/home/delphix/dxtoolkit2/dx_ctl_js_container -d democde1 -container_name 'Oracle DEV' -action enable"
+                        /**
+                        * DCT Jenkins Plugin
+                        */
+                        enableVDB name: 'Oracle_DEV', credentialId: "DCT-API-KEY" // VDB Name, not container name
+                }
+            )
+         }
+      }
+   }
+}

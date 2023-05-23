@@ -1,0 +1,98 @@
+//
+// Pipeline for Secure Delivery of Oracle datasource
+//
+// Demo:  Standard Demo
+//
+// 2022 (c) Delphix - Matteo Ferrari (matteo.ferrari@delphix.com)
+// 2023 DCT Jenkins Plugin Transforms by Nick Mathison
+//
+//
+pipeline {
+   agent { label 'Oracle Source' }
+   stages {
+       stage('Get Data from Production') {
+        agent { label 'Oracle Source' }
+        steps {
+            sh "/home/delphix/mask_oracle_read_prod.sh"
+         }
+       }
+       stage('Snap Production') {
+         agent { label 'devops' }
+         steps {
+            sh "/home/delphix/dxtoolkit2/dx_snapshot_db -d democde1 -name 'Oracle_master'"
+            
+            /**
+            * DCT Jenkins Plugin
+            */
+            createSnapshot name: 'Oracle_master', credentialId: "DCT-API-KEY"
+         }
+     }
+      stage('Refresh MASK') {
+         agent { label 'devops' }
+         steps {
+            sh "/home/delphix/dxtoolkit2/dx_refresh_db -d democde1 -name 'Oracle_MASK'"
+
+            /**
+            * DCT Jenkins Plugin
+            * We likely need ways to simply support the various Refreshes/Rollbacks/Rewinds/Resets that are all called "Refresh using ABC"
+            */
+            refreshVDBFromParent name: 'Oracle_MASK', credentialId: "DCT-API-KEY"
+         }
+      }
+      stage('Run MASK job') {
+         agent { label 'devops' }
+         steps {
+            sh "cd /home/delphix && ./dxmc job start --engine demomask1 --envname Oracle --jobname 'Mask anagrafe' --tgt_connector 'Oracle'"
+            
+            /**
+            * DCT Jenkins Plugin
+            * We likely need ways to simply support the various Refreshes/Rollbacks/Rewinds/Resets that are all called "Refresh using ABC"
+            */
+            startJob name: 'Mask anagrafe', envName: "Oracle", targetConnector: "Oracle", credentialId: "DCT-API-KEY"
+         }
+      }
+      stage('Snap MASK') {
+         agent { label 'devops' }
+         steps {
+            sh "/home/delphix/dxtoolkit2/dx_snapshot_db -d democde1 -name 'Oracle_MASK'"
+
+            
+            /**
+            * DCT Jenkins Plugin
+            */
+            createSnapshot name: 'Oracle_MASK', credentialId: "DCT-API-KEY"
+         }
+      }
+      stage('Refresh DEV and QA from MASK') {
+         agent { label 'devops' }
+         steps {
+            parallel(
+                Refresh_QA: {
+                    sh "/home/delphix/dxtoolkit2/dx_ctl_js_container -d democde1 -container_name 'Oracle QA' -action refresh"
+                
+                    /**
+                    * DCT Jenkins Plugin
+                    * We likely need ways to simply support the various Refreshes/Rollbacks/Rewinds/Resets that are now all called "Refresh using ABC"
+                    */
+                    refreshVDBFromParent name: 'Oracle_QA', credentialId: "DCT-API-KEY"  // VDB Name, not container name
+                },
+                Refresh_DEV: {
+                    sh "/home/delphix/dxtoolkit2/dx_ctl_js_container -d democde1 -container_name 'Oracle DEV' -action refresh"
+                
+                    /**
+                    * DCT Jenkins Plugin
+                    * We likely need ways to simply support the various Refreshes/Rollbacks/Rewinds/Resets that are now all called "Refresh using ABC"
+                    */
+                    refreshVDBFromParent name: 'Oracle_DEV', credentialId: "DCT-API-KEY"  // VDB Name, not container name
+                }
+            )
+         }
+      }
+     stage('Read data from DEV and QA') {
+         agent { label 'Oracle Target' }
+         steps {
+            sh "/home/delphix/mask_oracle_read_dev_qa.sh"
+         }
+      }
+   }
+}
