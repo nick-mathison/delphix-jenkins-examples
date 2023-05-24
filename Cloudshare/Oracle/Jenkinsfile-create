@@ -30,9 +30,8 @@ pipeline {
             '''
             /**
             * DCT Jenkins Plugin
-            * Fictional Step. v1 steps require Snapshot ID or Bookmark specification. 
             */ 
-               provisionVdb 
+               provisionVDBFromSnapshot 
                   sourceDataId: "Oracle_master",
                   name: "Oracle_MASK",
                   environmentId: "Oracle_Target",
@@ -119,7 +118,6 @@ pipeline {
             /**
             * DCT Jenkins Plugin
             * N/A - No equivalent.
-            * Update Tags and/or `make_current_account_owner`: true as required.
             */ 
          }
       }
@@ -141,8 +139,21 @@ pipeline {
             /**
             * DCT Jenkins Plugin
             * N/A - No equivalent.
-            * Update Tags and/or `make_current_account_owner`: true as required.
+            * A) Single VDB Container: Nothing to do. Update Tags and/or `make_current_account_owner`: true as required.
+            * B) Multi VDB Container: Use VDB Groups (Mocked out below)
             */ 
+
+            createVDBGroup
+               name: "Oracle_DEMO",
+               vdbIds: [Oracle_QA, Oracle_DEV]
+               additionalProperties: {
+                  "make_current_account_owner": true, // Optional, but ensures runtime user has access
+               },
+               tagList: [
+                  [key: "Group", value: "MaskGC"], // Optional, but could be equivalent to Target Group Id to help sort.
+                  [key: "Team",  value: "Alpha"]   // Optional, but update to reflect Team ownership.
+               ],
+               credentialId: "DCT-API-KEY"
          }
       }
       stage('Create Self Service Container Oracle QA') {
