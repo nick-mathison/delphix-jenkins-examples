@@ -145,7 +145,8 @@ pipeline {
 
             createVDBGroup
                name: "Oracle_DEMO",
-               vdbIds: [Oracle_QA, Oracle_DEV]
+               vdbIds: [<Oracle_QA_ID>, <Oracle_DEV_ID>] // Possible through Props file.
+               // vdbNames: [Oracle_QA, Oracle_DEV] // Equivalent input, but need to confirm across multiple engines.
                additionalProperties: {
                   "make_current_account_owner": true, // Optional, but ensures runtime user has access
                },
