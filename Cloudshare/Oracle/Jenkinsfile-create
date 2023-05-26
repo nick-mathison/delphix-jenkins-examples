@@ -45,7 +45,6 @@ pipeline {
                      [key: "Group", value: "MaskGC"], // Optional, but could be equivalent to Target Group Id to help sort.
                      [key: "Team",  value: "Alpha"]   // Optional, but update to reflect Team ownership.
                   ],
-                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
                   credentialId: "DCT-API-KEY"
                   // N/A -d democde1
                   // N/A -type oracle

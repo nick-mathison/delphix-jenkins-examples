@@ -30,7 +30,6 @@ pipeline {
                   vdbId: "<Oracle_DEV_ID>",
                   // name: // "Oracle_DEV", SUPPORT TBD, but it's VDB name, not container name
                   // force: true  // OPTIONAL
-                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
                   credentialId: "DCT-API-KEY"
          }
       }
@@ -53,7 +52,6 @@ pipeline {
                   vdbId: "<Oracle_QA_ID>",
                   // name: "Oracle_QA", // SUPPORT TBD, but it's VDB name, not container name
                   // force: true  // OPTIONAL
-                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
                   credentialId: "DCT-API-KEY"
          }
       }
@@ -92,7 +90,6 @@ pipeline {
                   vdbId: "<Oracle_MASK_ID>",
                   // name: "Oracle_MASK", // SUPPORT TBD, but it's VDB name, not container name
                   // force: true  // OPTIONAL
-                  waitForPolling: true, // This should be the default functionality, so we should remove it's requirement.
                   credentialId: "DCT-API-KEY"
          }
       }
