@@ -18,7 +18,7 @@ pipeline {
                         vdb_name = input.vdb_name;
                     }
                     withCredentials([string(credentialsId: 'DCT_API_KEY', variable: 'KEY')]) {
-                        delphixProvision name=vdb_name bookmark="${input.bookmark_id}" dct_api_key="${KEY}"
+                        provisionVDBFromBookmark name=vdb_name bookmark="${input.bookmark_id}" dct_api_key="${KEY}"
                     }
                 }
             }
@@ -58,17 +58,17 @@ pipeline {
                     // Option #1 with ID
                     def props = readProperties file: './delphix.properties'
                     withCredentials([string(credentialsId: 'DCT_API_KEY', variable: 'KEY')]) {
-                        delphixDestroy id="${props[vdb_id]}" dct_api_key=$KEY
+                        deleteVDB id="${props[vdb_id]}" dct_api_key=$KEY
                     }
                     // Option #2 with checkbox
-                    withCredentials([string(credentialsId: 'DCT_API_KEY', variable: 'KEY')]) {
-                        delphixDestroy use_properties_file=true dct_api_key=$KEY
-                    }
+                    // withCredentials([string(credentialsId: 'DCT_API_KEY', variable: 'KEY')]) {
+                    //     deleteVDB use_properties_file=true dct_api_key=$KEY
+                    // }
                     // Option #3 with Name
                     // We might need additional internal logic to transform the Name to an ID which the DCT API understands
-                    withCredentials([string(credentialsId: 'DCT_API_KEY', variable: 'KEY')]) {
-                        delphixDestroy name=vdb_name dct_api_key=$KEY
-                    }
+                    // withCredentials([string(credentialsId: 'DCT_API_KEY', variable: 'KEY')]) {
+                    //     deleteVDB name=vdb_name dct_api_key=$KEY
+                    // }
                 }
             }
         }
