@@ -29,8 +29,12 @@ pipeline {
                     steps {
                         script {
                             echo ('Provisioning Front End Data Set...')
-                            // provisionVDBFromBookmark name: 'jknFrnt', bookmarkId: 'Front End App (MS SQL) - Q1 2023', autoSelectRepository: true, fileNameSuffix: 'frnt', credentialId: 'dct_api_key'
-                            provisionVDBFromSnapshot name: 'jknFrnt', engineId: '1', sourceDataId: 'Oraclemaster_BZF', autoSelectRepository: true, fileNameSuffix: 'frnt', credentialId: 'dct_api_key'
+                            try {
+                                // provisionVDBFromBookmark name: 'jknFrnt', bookmarkId: 'Front End App (MS SQL) - Q1 2023', autoSelectRepository: true, fileNameSuffix: 'frnt', credentialId: 'dct_api_key'
+                                provisionVDBFromSnapshot name: 'jknFrnt', engineId: '1', sourceDataId: 'Oraclemaster_BZF', autoSelectRepository: true, fileNameSuffix: 'frnt', credentialId: 'dct_api_key'
+                            } catch (Exception e) {
+                                sleep (120)
+                            }
                         }
                     }
                 }
