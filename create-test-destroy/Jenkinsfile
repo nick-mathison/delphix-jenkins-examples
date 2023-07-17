@@ -157,7 +157,7 @@ pipeline {
                     steps {
                         script {
                             echo ('Destroying  Virtual Data Sets...')
-                            deleteVDB name: 'jknFrnt,jknBack', credentialId: 'dct-api-key'
+                            deleteVDB name: 'jknFrnt,jknBack', credentialId: 'dct_api_key'
                         }
                     }
                 }
