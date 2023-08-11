@@ -30,7 +30,7 @@ pipeline {
                         script {
                             echo ('Provisioning Front End Data Set...')
                             // provisionVDBFromBookmark name: 'jknFrnt', bookmarkId: 'Front End App (MS SQL) - Q1 2023', autoSelectRepository: true, fileNameSuffix: 'frnt', credentialId: 'dct_api_key'
-                            provisionVDBFromSnapshot name: 'jknFrnt', sourceDataId: 'Suitecrm_DEV', autoSelectRepository: true, fileNameSuffix: 'frnt', tagList: [[key: 'AppDB', value: 'JKE Banking - Frontend'], [key: 'Team', value: 'Alpha']], credentialId: 'dct_api_key'
+                            provisionVDBFromSnapshot name: 'jknFrnt', sourceDataId: 'Suitecrm_DEV', autoSelectRepository: true, fileNameSuffix: 'frnt', tagList: [[key: 'AppDB', value: 'JDE Banking - Frontend'], [key: 'Team', value: 'Alpha']], credentialId: 'dct_api_key'
                         }
                     }
                 }
@@ -40,7 +40,7 @@ pipeline {
                             echo ('Provisioning Back End Data Set...')
                             sleep (30)
                             // provisionVDBFromBookmark name: 'jknBack', bookmarkId: 'Back End App (Oracle) - Q1 2023', autoSelectRepository: true, fileNameSuffix: 'back', credentialId: 'dct_api_key'
-                            provisionVDBFromSnapshot name: 'jknBack', sourceDataId: 'Oracle_master', autoSelectRepository: true, fileNameSuffix: 'back', tagList: [[key: 'AppDB', value: 'JKE Banking - Backend'], [key: 'Team', value: 'Alpha']], credentialId: 'dct_api_key'
+                            provisionVDBFromSnapshot name: 'jknBack', sourceDataId: 'Oracle_master', autoSelectRepository: true, fileNameSuffix: 'back', tagList: [[key: 'AppDB', value: 'JDE Banking - Backend'], [key: 'Team', value: 'Alpha']], credentialId: 'dct_api_key'
                         }
                     }
                 }
